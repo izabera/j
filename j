@@ -21,9 +21,10 @@ done
 #####  done!   a json parser in 20 lines of bash!    \o/   #####
 
 
+[[ $json =~ ^val[a-j]+$ ]] || exit      # silly "error detection"
 
-# example usage: pretty printer (change this to extract fields or whatever)
 declare -A rt                           # inverse of tr, naming things is hard
+# pretty printing
 for i in "${tr[@]}"; do ((rt[$i]=j++)); done
 set -f; LANG=$oldlang IFS=:,
 print ()
@@ -58,5 +59,31 @@ print ()
       fi ;;
   esac
 
-[[ $json =~ ^val[a-j]+$ ]] || exit      # silly "error detection"
+resolvevalues ()                        # remove the pesky valXYZ
+  while [[ $json =~ (.*)val([a-j]+)(.*) ]]; do
+    json=${BASH_REMATCH[1]}${val_list[rt[${BASH_REMATCH[2]}]]}${BASH_REMATCH[3]}
+  done
+
+# field extraction
+for arg do                              # plenty of error checking here!
+  resolvevalues
+  case $arg in
+    obj*) [[ $json = obj* ]] || { json=null; break; }
+      json=${obj_list[rt[${json:3}]]}
+      resolvevalues; object=($json)
+      while ((${#object[@]})); do
+        if [[ ${str_list[rt[${object:3}]]} = "${arg:5}" ]]; then
+          json=${object[1]}
+          continue 2
+        else object=("${object[@]:2}")
+        fi
+      done
+      json=null; break ;;
+    arr*) [[ $json = arr* ]] || { json=null; break; }
+      json=${arr_list[rt[${json:3}]]}
+      resolvevalues; array=($json)
+      ((${#array[@]} >= ${arg:5} )) || { json=null; break; }
+      json=${array[${arg:5}]} ;;
+  esac
+done
 print "$json"

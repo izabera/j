@@ -7,7 +7,8 @@ features
 --------
 - parses correctly all the correct input, garbage in garbage out
 - up to 1000 elements (can easily be extended if needed)
-- an example pretty printer, just to show how it can be used
+- field extraction (the syntax is easy, example below)
+- pretty printing
 
 notes
 --------
@@ -51,4 +52,8 @@ $ ./j <<< '{"1":2,"3":{"4":[null,true,false,{"foo   \\  \"è\u00C8":[{},[]]}]}}'
     ]
   }
 }
+
+
+$ ./j 'obj->"foo"' 'arr->1' 'obj->"baz"' <<< '{"foo":["bar",{"baz":"bat"}]}'
+"bat"
 ```
