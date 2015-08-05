@@ -1,5 +1,5 @@
 #!/bin/bash
-json=$(cat) oldlang=$LANG LANG=C
+json=$(</dev/stdin) oldlang=$LANG LANG=C
 str='("(\\.|[^\\"])*")'                 # regexes to match json types
 num='(-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?)'
 arr='\[(val[a-j]+(,val[a-j]+)*)*]'
