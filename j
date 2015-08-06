@@ -1,16 +1,16 @@
 #!/bin/bash
 json=$(</dev/stdin) oldlang=$LANG LANG=C
 str='("(\\.|[^\\"])*")'                 # regexes to match json types
-num='(-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?)'
-arr='\[(val[a-j]+(,val[a-j]+)*)*]'
-obj='\{(val[a-j]+:val[a-j]+(,val[a-j]+:val[a-j]+)*)*}' # ...cheating
-val='((str|num|obj|arr)[a-j]+|true|false|null)'
+num="(-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?)"
+val="((str|num|obj|arr)[a-j]+|true|false|null)"
+arr="\[($val(,$val)*)*]"
+obj="\{(str[a-j]+:$val(,str[a-j]+:$val)*)*}"
 tr=({a..j}{a..j}{a..j})                 # to avoid adding more numbers
 declare -n match
 
 push () { declare -gn list=${type}_list; list+=("${BASH_REMATCH[1]}"); }
 match ()
-  for match in str num obj val arr; do  # remove whitespace asap
+  for match in str num obj arr; do      # remove whitespace asap
     [[ ${!match} != str && ! i++ -ne 0 ]] && json=${json//[$' \t\n\r']}
     [[ $json =~ $match(.*) ]] && { type=${!match}; return; }
   done
@@ -21,7 +21,7 @@ done
 #####  done!   a json parser in 20 lines of bash!    \o/   #####
 
 
-[[ $json =~ ^val[a-j]+$ ]] || exit      # silly "error detection"
+[[ $json =~ ^$val$ ]] || exit           # silly "error detection"
 
 declare -A rt                           # inverse of tr, naming things is hard
 # pretty printing
@@ -29,7 +29,6 @@ for i in "${tr[@]}"; do ((rt[$i]=j++)); done
 set -f; LANG=$oldlang IFS=:,
 print ()
   case $1 in
-    val*) print "${val_list[rt[${1:3}]]}" ;;
     null|true|false) printf "$1" ;;
     str*) printf %b "${str_list[rt[${1:3}]]}" ;;
     num*) printf %s "${num_list[rt[${1:3}]]}" ;;

@@ -13,7 +13,7 @@ features
 notes
 --------
 - needs bash 4.3 or above
-- push simulate stacks with arrays
+- push simulates stacks with arrays
 - most of the state is kept in global variables to save a few expansions
   - list must be a global nameref
   - tr is basically an array to precompute the output of  tr 0-9 a-j <<< "$var"
