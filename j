@@ -30,7 +30,7 @@ set -f; LANG=$oldlang IFS=:,
 print ()
   case $1 in
     null|true|false) printf "$1" ;;
-    str*) printf %b "${str_list[rt[${1:3}]]}" ;;
+    str*) tmp=${str_list[rt[${1:3}]]//\\u0022/'\"'}; printf %b "${tmp//\\u005c/'\\\\'}" ;;
     num*) printf %s "${num_list[rt[${1:3}]]}" ;;
     arr*) local array=(${arr_list[rt[${1:3}]]})
       if ((!${#array[@]})); then printf "[]"
