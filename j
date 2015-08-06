@@ -3,8 +3,8 @@ json=$(</dev/stdin) oldlang=$LANG LANG=C
 str='("(\\.|[^\\"])*")'                 # regexes to match json types
 num="(-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?)"
 val="((str|num|obj|arr)[a-j]+|true|false|null)"
-arr="\[($val(,$val)*)*]"
-obj="\{(str[a-j]+:$val(,str[a-j]+:$val)*)*}"
+arr="\[($val(,$val)*)?]"
+obj="\{(str[a-j]+:$val(,str[a-j]+:$val)*)?}"
 tr=({a..j}{a..j}{a..j})                 # to avoid adding more numbers
 declare -n match
 
@@ -58,18 +58,11 @@ print ()
       fi ;;
   esac
 
-resolvevalues ()                        # remove the pesky valXYZ
-  while [[ $json =~ (.*)val([a-j]+)(.*) ]]; do
-    json=${BASH_REMATCH[1]}${val_list[rt[${BASH_REMATCH[2]}]]}${BASH_REMATCH[3]}
-  done
-
 # field extraction
 for arg do                              # plenty of error checking here!
-  resolvevalues
   case $arg in
     obj*) [[ $json = obj* ]] || { json=null; break; }
-      json=${obj_list[rt[${json:3}]]}
-      resolvevalues; object=($json)
+      json=${obj_list[rt[${json:3}]]} object=($json)
       while ((${#object[@]})); do
         if [[ ${str_list[rt[${object:3}]]} = "${arg:5}" ]]; then
           json=${object[1]}
@@ -79,8 +72,7 @@ for arg do                              # plenty of error checking here!
       done
       json=null; break ;;
     arr*) [[ $json = arr* ]] || { json=null; break; }
-      json=${arr_list[rt[${json:3}]]}
-      resolvevalues; array=($json)
+      json=${arr_list[rt[${json:3}]]} array=($json)
       ((${#array[@]} >= ${arg:5} )) || { json=null; break; }
       json=${array[${arg:5}]} ;;
   esac
