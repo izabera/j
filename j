@@ -35,11 +35,11 @@ print ()
       while [[ $tmp =~ $regex(.*) ]]; do
         printf %s "${tmp%"$BASH_REMATCH"}"
         case ${BASH_REMATCH[1]} in
-          \\\\|\\[nftrb]) printf %s "${BASH_REMATCH[1]}" ;;
           \\u0008) printf '\\b' ;; \\u0009) printf '\\t' ;;
           \\u000a) printf '\\n' ;; \\u000c) printf '\\f' ;;
           \\u000d) printf '\\r' ;; \\u0022) printf '\\"' ;;
           \\u005c) printf '\\\\' ;;
+          \\\\|\\[nftrb]|\\u00[01]?) printf %s "${BASH_REMATCH[1]}" ;;
           *) printf %b "${BASH_REMATCH[1]}"
         esac
         tmp=${BASH_REMATCH[2]}
