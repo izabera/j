@@ -1,0 +1,13 @@
+#!/bin/bash
+strings=(
+  '{"x": -1}'
+  null
+  '"Aa\u000d\u000a\u0009\u0008\u000c\u03bc"'
+  $'\t'
+  '{"1":2,"3":{"4":[null,true,false,{"foo   \\  \"è\u00C8":[{},[]]}]}}'
+  "[]"
+)
+for i in "${strings[@]}"; do
+  diff <(jq . <<< "$i") <(j <<< "$i") || exit
+done
+echo purrfect

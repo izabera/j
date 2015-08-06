@@ -26,11 +26,25 @@ done
 declare -A rt                           # inverse of tr, naming things is hard
 # pretty printing
 for i in "${tr[@]}"; do ((rt[$i]=j++)); done
-set -f; LANG=$oldlang IFS=:,
+set -f; LANG=$oldlang IFS=:, regex='(\\[nftrb]|\\\\|\\u[a-f0-9]{4})'
+shopt -s nocasematch
 print ()
   case $1 in
     null|true|false) printf "$1" ;;
-    str*) tmp=${str_list[rt[${1:3}]]//\\u0022/'\"'}; printf %b "${tmp//\\u005c/'\\\\'}" ;;
+    str*) tmp=${str_list[rt[${1:3}]]}
+      while [[ $tmp =~ $regex(.*) ]]; do
+        printf %s "${tmp%"$BASH_REMATCH"}"
+        case ${BASH_REMATCH[1]} in
+          \\\\|\\[nftrb]) printf %s "${BASH_REMATCH[1]}" ;;
+          \\u0008) printf '\\b' ;; \\u0009) printf '\\t' ;;
+          \\u000a) printf '\\n' ;; \\u000c) printf '\\f' ;;
+          \\u000d) printf '\\r' ;; \\u0022) printf '\\"' ;;
+          \\u005c) printf '\\\\' ;;
+          *) printf %b "${BASH_REMATCH[1]}"
+        esac
+        tmp=${BASH_REMATCH[2]}
+      done
+      printf %s "$tmp" ;;               # just like jq (this was hard)
     num*) printf %s "${num_list[rt[${1:3}]]}" ;;
     arr*) local array=(${arr_list[rt[${1:3}]]})
       if ((!${#array[@]})); then printf "[]"
@@ -77,4 +91,4 @@ for arg do                              # plenty of error checking here!
       json=${array[${arg:5}]} ;;
   esac
 done
-print "$json"
+print "$json"; echo
