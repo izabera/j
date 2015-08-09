@@ -20,16 +20,16 @@ faq (questions i've been asked 1+ times)
   here's a simplified example:
 
   ```
-  yson='{"x":"y"}'                                  original json string
+  json='{"x":"y"}'                                  original json string
   "x"                                               identify first string
   strings_array=([0]='"x"')                         put it into an array
-  yson='{string0:"y"}'                              replace with pointer
+  json='{string0:"y"}'                              replace with pointer
   "y"                                               identify second string
   strings_array=([0]='"x"' [1]='"y"')               goes into array
-  yson='{string0:string1}'                          replaced with pointer
+  json='{string0:string1}'                          replaced with pointer
   {string0:string1}                                 identify object
   objects_array=([0]='{string0:string1}')           put object into array
-  yson='object0'                                    replace with pointer
+  json='object0'                                    replace with pointer
   ```
   
 - why do you claim it's 20 lines?  i count more
